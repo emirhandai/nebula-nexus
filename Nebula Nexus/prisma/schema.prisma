@@ -1,0 +1,467 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  image         String?
+  emailVerified DateTime?
+  
+  // Role and permissions
+  role          String    @default("user") // "user", "admin", "moderator"
+  isActive      Boolean   @default(true)
+  isBanned      Boolean   @default(false)
+  lastLoginAt   DateTime?
+  
+  // Profile fields
+  phone         String?
+  location      String?
+  bio           String?
+  website       String?
+  linkedin      String?
+  github        String?
+  twitter       String?
+  instagram     String?
+  education     String?
+  experience    String?
+  skills        String? // JSON string
+  interests     String? // JSON string
+  
+  // Career field selection
+  selectedField String? // User's selected career field (e.g., "Yapay Zeka & Makine Öğrenmesi")
+  
+  // Privacy settings
+  isPublic              Boolean @default(false)
+  showEmail             Boolean @default(false)
+  showPhone             Boolean @default(false)
+  showLocation          Boolean @default(false)
+  showStats             Boolean @default(true)
+  
+  // Notification settings
+  emailNotifications    Boolean @default(true)
+  pushNotifications     Boolean @default(true)
+  smsNotifications      Boolean @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  oceanResults          OceanResult[]
+  careerRecommendations CareerRecommendation[]
+  chatSessions          ChatSession[]
+  activityLogs          ActivityLog[]
+  achievements          UserAchievement[]
+  forumPosts            ForumPost[]
+  forumComments         ForumComment[]
+  notifications         Notification[]
+  securityLogs          SecurityLog[]
+  careerRoadmaps        CareerRoadmap[]
+  sentMessages          Message[] @relation("SentMessages")
+  receivedMessages      Message[] @relation("ReceivedMessages")
+  projectApplications   ProjectApplication[]
+  certificates          Certificate[]
+  careerGoals           CareerGoal[]
+  forumPostLikes        ForumPostLike[]
+  progressTracking      ProgressTracking[]
+
+  @@map("users")
+}
+
+model OceanResult {
+  id                String   @id @default(cuid())
+  userId            String
+  openness          Float
+  conscientiousness Float
+  extraversion      Float
+  agreeableness     Float
+  neuroticism       Float
+  
+  // Test metadata
+  answers           String?  // JSON string of OCEAN answers
+  onetScores        String?  // JSON string of O*NET scores
+  onetAnswers       String?  // JSON string of O*NET answers
+  recommendedFields String   // JSON string of recommended software fields
+  
+  // Test session info
+  testDuration      Int      // Duration in seconds
+  questionsAnswered Int      // Number of questions answered
+  testDate          DateTime @default(now())
+  completedAt       DateTime @default(now())
+  
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  careerRecommendations CareerRecommendation[]
+
+  @@map("ocean_results")
+}
+
+model CareerRecommendation {
+  id                String   @id @default(cuid())
+  oceanResultId     String
+  userId            String
+  
+  // Recommendation details
+  field             String   // Career field name
+  confidence        Float    // Confidence score (0-1)
+  description       String   // Detailed description
+  reasoning         String?  // AI reasoning for recommendation
+  learningPath      String?  // Detailed learning path from AI
+  nextSteps         String?  // Next steps and action items from AI
+  requiredSkills    String?  // JSON string of required skills
+  salaryRange       String?  // Salary range information
+  jobMarket         String?  // Job market information
+  onetCompatibility String?  // O*NET compatibility analysis
+  
+  createdAt         DateTime @default(now())
+  
+  // Relations
+  oceanResult       OceanResult @relation(fields: [oceanResultId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("career_recommendations")
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  content   String
+  role      String   // "user" or "assistant"
+  modelUsed String?  // AI model used for response
+  tokensUsed Int?    // Number of tokens used
+  timestamp DateTime @default(now())
+  
+  // Relations
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // "login", "test_completion", "chat_message", etc.
+  action      String
+  title       String?  // Yeni eklenen alan - aktivite başlığı
+  details     String?
+  metadata    String?  // JSON string for additional data
+  data        String?  // JSON string for additional data
+  description String? // Description of the activity
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  type          String   // "test_completion", "chat_messages", "login_streak", etc.
+  title         String
+  description   String
+  icon          String?
+  unlockedAt    DateTime @default(now())
+  earnedAt      DateTime @default(now())
+  
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model ForumPost {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  content     String
+  category    String   // "general", "career", "technical", etc.
+  isPinned    Boolean  @default(false)
+  isLocked    Boolean  @default(false)
+  isApproved  Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  viewCount   Int      @default(0)
+  tags        String?  // JSON string of tags
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments    ForumComment[]
+  likes       ForumPostLike[]
+
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id          String   @id @default(cuid())
+  postId      String
+  userId      String
+  content     String
+  isApproved  Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("forum_comments")
+}
+
+model ForumPostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("forum_post_likes")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "achievement", "mentorship", "forum", etc.
+  title     String
+  message   String
+  data      String?  // JSON string for additional data
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model SecurityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // "login_attempt", "password_change", "suspicious_activity", etc.
+  ipAddress String?
+  userAgent String?
+  details   String?  // JSON string for additional data
+  data      String?  // JSON string for additional data
+  severity  String   @default("info") // "info", "warning", "error", "critical"
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("security_logs")
+}
+
+model CareerRoadmap {
+  id          String   @id @default(cuid())
+  userId      String
+  fieldName   String
+  currentLevel Int     @default(1)
+  totalLevels Int      @default(5)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+  courses     Course[]
+  progress    ProgressTracking[]
+
+  @@map("career_roadmaps")
+}
+
+model Milestone {
+  id              String   @id @default(cuid())
+  roadmapId       String
+  title           String
+  description     String
+  level           Int
+  isCompleted     Boolean  @default(false)
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  roadmap         CareerRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@map("milestones")
+}
+
+model Course {
+  id              String   @id @default(cuid())
+  roadmapId       String
+  title           String
+  description     String
+  url             String?
+  duration        String?
+  isCompleted     Boolean  @default(false)
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  roadmap         CareerRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@map("courses")
+}
+
+model ProgressTracking {
+  id          String   @id @default(cuid())
+  roadmapId   String
+  userId      String
+  itemType    String   // "milestone" or "course"
+  itemId      String
+  progress    Int      @default(0) // Progress percentage (0-100)
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  roadmap     CareerRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@map("progress_tracking")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relations
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  requirements String?
+  budget      String?
+  deadline    DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  applications ProjectApplication[]
+
+  @@map("projects")
+}
+
+model ProjectApplication {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  message   String?
+  status    String   @default("pending") // "pending", "accepted", "rejected"
+  createdAt DateTime @default(now())
+  
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("project_applications")
+}
+
+model Certificate {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  issuer      String
+  issueDate   DateTime
+  expiryDate  DateTime?
+  certificateUrl String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("certificates")
+}
+
+model CareerGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  progress    Int      @default(0) // Progress percentage (0-100)
+  targetDate  DateTime?
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("career_goals")
+}
+
+model SoftwareField {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  description       String?
+  category          String?
+  requiredSkills    String?  // JSON string
+  personalityTraits String?  // JSON string
+  averageSalary     Float?
+  jobGrowth         Float?
+  demandLevel       String?
+  learningPath      String?  // JSON string
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("software_fields")
+}
+
+model ForumCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("forum_categories")
+} 

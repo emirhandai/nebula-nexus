@@ -1,0 +1,1368 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { 
+  User, 
+  Brain, 
+  Target, 
+  TrendingUp, 
+  CheckCircle,
+  AlertCircle,
+  BookOpen,
+  Award,
+  TestTube,
+  GraduationCap,
+  Sparkles,
+  Activity,
+  Trophy,
+  Target as TargetIcon,
+  Clock,
+  Star,
+  Calendar,
+  BarChart3,
+  Zap,
+  Target as TargetIcon2,
+  MessageSquare,
+  BookOpen as BookOpen2,
+  CheckCircle as CheckCircle2
+} from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
+import ProgressTracker from '@/components/ui/ProgressTracker';
+
+interface CareerRecommendation {
+  id: string;
+  field: string;
+  confidence: number;
+  reasoning: string;
+  createdAt: string;
+}
+
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  joinDate: string;
+  image?: string;
+  oceanScores?: {
+    openness: number;
+    conscientiousness: number;
+    extraversion: number;
+    agreeableness: number;
+    neuroticism: number;
+  };
+  lastTestDate?: string;
+  careerMatchPercentage?: number;
+  selectedField?: string;
+  careerRecommendations?: CareerRecommendation[];
+}
+
+interface ProgressData {
+  testCompleted: boolean;
+  fieldSelected: boolean;
+  coursesCompleted: number;
+  totalCourses: number;
+  chatSessions: number;
+  achievementPoints: number;
+  level: number;
+  nextLevelPoints: number;
+  currentLevelPoints: number;
+}
+
+interface RecentActivity {
+  id: string;
+  type: 'test_completed' | 'field_selected' | 'course_completed' | 'chat_session' | 'achievement_earned';
+  title: string;
+  description: string;
+  timestamp: Date;
+  icon: React.ReactNode;
+  color: string;
+}
+
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  earned: boolean;
+  progress?: number;
+  maxProgress?: number;
+}
+
+interface CareerGoal {
+  id: string;
+  title: string;
+  description: string;
+  targetDate: Date;
+  progress: number;
+  status: 'not_started' | 'in_progress' | 'completed';
+}
+
+export default function DashboardPage() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [hasCompletedTest, setHasCompletedTest] = useState(false);
+  const [selectedField, setSelectedField] = useState<string>('');
+  const [availableFields, setAvailableFields] = useState<CareerRecommendation[]>([]);
+  const [progressData, setProgressData] = useState<ProgressData>({
+    testCompleted: false,
+    fieldSelected: false,
+    coursesCompleted: 0,
+    totalCourses: 10,
+    chatSessions: 0,
+    achievementPoints: 0,
+    level: 1,
+    nextLevelPoints: 100,
+    currentLevelPoints: 0
+  });
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [careerGoals, setCareerGoals] = useState<CareerGoal[]>([]);
+
+
+  // Load user data and progress
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoadingData(true);
+      try {
+        await loadUserData();
+        await loadProgressData();
+        loadRecentActivities();
+        loadAchievements();
+        loadCareerGoals();
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
+
+  // Update data when field selection changes
+  useEffect(() => {
+    if (selectedField && userData?.id) {
+      loadProgressData();
+      loadRecentActivities();
+      loadAchievements();
+      loadCareerGoals();
+    }
+  }, [selectedField, userData?.id]);
+
+  // Load career recommendations when user data is loaded and test is completed
+  useEffect(() => {
+    if (userData?.id && hasCompletedTest && !selectedField) {
+      console.log('Loading career recommendations...');
+      loadCareerRecommendations();
+    }
+  }, [userData?.id, hasCompletedTest, selectedField]);
+
+  // Force load career recommendations when component mounts and user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.id && !isLoadingData) {
+      console.log('Force loading career recommendations...');
+      loadCareerRecommendations();
+    }
+  }, [isAuthenticated, user?.id, isLoadingData]);
+
+
+
+
+
+  const loadUserData = async () => {
+    try {
+      // Get user ID from session
+      const sessionResponse = await fetch('/api/auth/session');
+      const sessionData = await sessionResponse.json();
+      
+      if (!sessionData.user?.email) {
+        console.error('No user email in session');
+        return;
+      }
+
+      // Get user by email
+      const userResponse = await fetch(`/api/user/profile?email=${sessionData.user.email}`);
+      if (userResponse.ok) {
+        const data = await userResponse.json();
+        setUserData(data);
+        setSelectedField(data.selectedField || '');
+        
+        // Check test completion after user data is loaded
+        if (data.oceanScores && Object.keys(data.oceanScores).length > 0) {
+          setHasCompletedTest(true);
+          console.log('Test completed, ocean scores:', data.oceanScores);
+        } else {
+          setHasCompletedTest(false);
+          console.log('No test completed yet');
+        }
+      } else {
+        console.error('Failed to load user data:', userResponse.status);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      toast.error('Kullanıcı bilgileri yüklenirken hata oluştu');
+    }
+  };
+
+  const loadCareerRecommendations = async () => {
+    try {
+      if (user?.id) {
+        console.log('Loading career recommendations for user:', user.id);
+        
+        // Simple fetch without complex error handling
+        const response = await fetch('/api/user/career-recommendations');
+        const data = await response.json();
+        
+        console.log('API Response:', data);
+        
+        if (data.success && data.data && data.data.recommendations) {
+          setAvailableFields(data.data.recommendations);
+          console.log('Career recommendations loaded:', data.data.recommendations.length);
+        } else {
+          console.log('No recommendations in response');
+          setAvailableFields([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading career recommendations:', error);
+      setAvailableFields([]);
+    }
+  };
+
+  const loadProgressData = async () => {
+    try {
+      if (userData?.id) {
+        const response = await fetch('/api/user/progress');
+        if (response.ok) {
+          const data = await response.json();
+          setProgressData(data);
+        } else {
+          console.error('Failed to load progress data');
+          // Fallback to basic data
+          const progress: ProgressData = {
+            testCompleted: hasCompletedTest,
+            fieldSelected: !!selectedField,
+            coursesCompleted: 0,
+            totalCourses: 8,
+            chatSessions: 0,
+            achievementPoints: 0,
+            level: 1,
+            nextLevelPoints: 100,
+            currentLevelPoints: 0
+          };
+          setProgressData(progress);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading progress data:', error);
+      // Fallback to basic data
+      const progress: ProgressData = {
+        testCompleted: hasCompletedTest,
+        fieldSelected: !!selectedField,
+        coursesCompleted: 0,
+        totalCourses: 8,
+        chatSessions: 0,
+        achievementPoints: 0,
+        level: 1,
+        nextLevelPoints: 100,
+        currentLevelPoints: 0
+      };
+      setProgressData(progress);
+    }
+  };
+
+  const loadRecentActivities = async () => {
+    try {
+      if (userData?.id) {
+        const response = await fetch('/api/user/recent-activities');
+        if (response.ok) {
+          const activities = await response.json();
+          
+          // Convert API response to component format
+          const formattedActivities: RecentActivity[] = activities.map((activity: any) => ({
+            id: activity.id,
+            type: activity.type,
+            title: activity.title,
+            description: activity.description,
+            timestamp: new Date(activity.timestamp),
+            icon: getActivityIcon(activity.icon),
+            color: activity.color
+          }));
+          
+          setRecentActivities(formattedActivities);
+        } else {
+          console.error('Failed to load recent activities');
+          setRecentActivities([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading recent activities:', error);
+      setRecentActivities([]);
+    }
+  };
+
+  const loadAchievements = async () => {
+    try {
+      if (userData?.id) {
+        const response = await fetch('/api/user/achievements');
+        if (response.ok) {
+          const achievements = await response.json();
+          
+          // Convert API response to component format
+          const formattedAchievements: Achievement[] = achievements.map((achievement: any) => ({
+            id: achievement.id,
+            title: achievement.title,
+            description: achievement.description,
+            icon: getAchievementIcon(achievement.icon),
+            color: achievement.color,
+            earned: achievement.earned,
+            progress: achievement.progress,
+            maxProgress: achievement.maxProgress
+          }));
+          
+          setAchievements(formattedAchievements);
+        } else {
+          console.error('Failed to load achievements');
+          setAchievements([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading achievements:', error);
+      setAchievements([]);
+    }
+  };
+
+  // Helper functions to convert icon strings to React components
+  const getActivityIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'TestTube':
+        return <TestTube className="w-4 h-4" />;
+      case 'Target':
+        return <Target className="w-4 h-4" />;
+      case 'MessageSquare':
+        return <MessageSquare className="w-4 h-4" />;
+      case 'Award':
+        return <Award className="w-4 h-4" />;
+      case 'BookOpen':
+        return <BookOpen className="w-4 h-4" />;
+      default:
+        return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  const getAchievementIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'TestTube':
+        return <TestTube className="w-5 h-5" />;
+      case 'Target':
+        return <Target className="w-5 h-5" />;
+      case 'MessageSquare':
+        return <MessageSquare className="w-5 h-5" />;
+      case 'Award':
+        return <Award className="w-5 h-5" />;
+      case 'BookOpen':
+        return <BookOpen className="w-5 h-5" />;
+      case 'Trophy':
+        return <Trophy className="w-5 h-5" />;
+      default:
+        return <Star className="w-5 h-5" />;
+    }
+  };
+
+  const loadCareerGoals = () => {
+    const goals: CareerGoal[] = [
+      {
+        id: '1',
+        title: 'Temel Beceriler',
+        description: 'Seçilen alanda temel becerileri öğrenin',
+        targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 gün sonra
+        progress: hasCompletedTest ? 30 : 0,
+        status: hasCompletedTest ? 'in_progress' : 'not_started'
+      },
+      {
+        id: '2',
+        title: 'İlk Proje',
+        description: 'Seçilen alanda ilk projenizi tamamlayın',
+        targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 gün sonra
+        progress: 0,
+        status: 'not_started'
+      },
+      {
+        id: '3',
+        title: 'Portfolio Oluşturma',
+        description: 'Kişisel portfolio sitenizi oluşturun',
+        targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 gün sonra
+        progress: 0,
+        status: 'not_started'
+      }
+    ];
+    
+    setCareerGoals(goals);
+  };
+
+  const calculateAchievementPoints = (testResult: string | null, chatSessions: number, selectedField: string): number => {
+    let points = 0;
+    
+    if (testResult) points += 50;
+    if (selectedField) points += 30;
+    points += chatSessions * 5;
+    points += Math.floor(Math.random() * 20);
+    
+    return points;
+  };
+
+  const calculateCareerMatch = (scores: UserData['oceanScores'], selectedField: string): number => {
+    if (!scores) return 50; // Default match if no scores available
+    
+    // Field-specific scoring based on OCEAN traits
+    const fieldRequirements: { [key: string]: { [key: string]: number } } = {
+      'AI & Machine Learning': { openness: 80, conscientiousness: 70, extraversion: 40, agreeableness: 50, neuroticism: 30 },
+      'Frontend Development': { openness: 60, conscientiousness: 70, extraversion: 50, agreeableness: 60, neuroticism: 40 },
+      'Mobile Development': { openness: 65, conscientiousness: 75, extraversion: 60, agreeableness: 55, neuroticism: 35 },
+      'Cybersecurity': { openness: 70, conscientiousness: 80, extraversion: 40, agreeableness: 45, neuroticism: 25 },
+      'Data Engineering': { openness: 75, conscientiousness: 75, extraversion: 45, agreeableness: 50, neuroticism: 30 },
+      'Backend Development': { openness: 65, conscientiousness: 75, extraversion: 45, agreeableness: 55, neuroticism: 35 },
+      'Full Stack Development': { openness: 70, conscientiousness: 75, extraversion: 55, agreeableness: 60, neuroticism: 35 }
+    };
+
+    const requirements = fieldRequirements[selectedField];
+    if (!requirements) return 50; // Default match for unknown fields
+
+    let totalMatch = 0;
+    let maxPossible = 0;
+
+    Object.entries(requirements).forEach(([trait, requiredScore]) => {
+      const userScore = scores[trait as keyof typeof scores] || 0;
+      const match = Math.max(0, 100 - Math.abs(userScore - requiredScore));
+      totalMatch += match;
+      maxPossible += 100;
+    });
+
+    return Math.round((totalMatch / maxPossible) * 100);
+  };
+
+
+
+  const generateFieldRecommendations = async (scores: UserData['oceanScores']) => {
+    try {
+      // Use Gemini analysis for recommendations
+      const analysisResponse = await fetch('/api/ocean/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          oceanScores: scores,
+          userId: user?.id
+        }),
+      });
+
+      if (analysisResponse.ok) {
+        const analysis = await analysisResponse.json();
+        if (analysis.analysis && analysis.analysis.topRecommendations) {
+          return analysis.analysis.topRecommendations.map((rec: { field: { name: string } }) => rec.field.name);
+        }
+      }
+      
+      // If Gemini analysis fails, return empty array - no fallback recommendations
+      console.warn('Gemini analysis failed, no recommendations available');
+      return [];
+    } catch (error) {
+      console.error('Error getting Gemini recommendations:', error);
+      return [];
+    }
+  };
+
+  // Enhanced field selection with emotion analysis
+  const handleFieldSelection = async (field: string) => {
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          selectedField: field
+        })
+      });
+
+      if (response.ok) {
+        setSelectedField(field);
+        setUserData(prev => prev ? { ...prev, selectedField: field } : null);
+        setProgressData(prev => ({ ...prev, fieldSelected: true, achievementPoints: prev.achievementPoints + 30 }));
+        toast.success(`${field} alanını seçtin! Kariyer yol haritasına yönlendiriliyorsunuz...`);
+        
+        // Reload data after field selection
+        loadRecentActivities();
+        loadAchievements();
+        loadCareerGoals();
+        
+        // Redirect to career roadmap after a short delay
+        setTimeout(() => {
+          window.location.href = '/career-roadmap';
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error updating field selection:', error);
+      toast.error('Alan seçimi kaydedilirken hata oluştu');
+    }
+  };
+
+  const getLevelColor = (level: number) => {
+    if (level >= 10) return 'from-purple-500 to-pink-500';
+    if (level >= 5) return 'from-blue-500 to-cyan-500';
+    if (level >= 3) return 'from-green-500 to-emerald-500';
+    return 'from-yellow-500 to-orange-500';
+  };
+
+  const getLevelTitle = (level: number) => {
+    if (level >= 10) return 'Uzman';
+    if (level >= 5) return 'Gelişmiş';
+    if (level >= 3) return 'Orta';
+    return 'Başlangıç';
+  };
+
+  const getStatusColor = (status: CareerGoal['status']) => {
+    switch (status) {
+      case 'completed': return 'text-green-400';
+      case 'in_progress': return 'text-blue-400';
+      case 'not_started': return 'text-gray-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getStatusText = (status: CareerGoal['status']) => {
+    switch (status) {
+      case 'completed': return 'Tamamlandı';
+      case 'in_progress': return 'Devam Ediyor';
+      case 'not_started': return 'Başlanmadı';
+      default: return 'Bilinmiyor';
+    }
+  };
+
+  if (isLoading || isLoadingData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-400 mx-auto mb-6"></div>
+          <p className="text-purple-200 text-lg">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-4">Hoş Geldiniz!</h2>
+          <p className="text-purple-200 mb-8">Dashboard&apos;a erişmek için lütfen giriş yapın.</p>
+          <a href="/auth/signin" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+            Giriş Yap
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+
+
+
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                Dashboard
+              </h1>
+              <p className="text-purple-200 text-lg">Hoş geldin, {userData?.name || user?.name}! 👋</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                {userData?.image ? (
+                  <img src={userData.image} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                ) : (
+                  <User className="w-6 h-6 text-white" />
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Access Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link href="/test">
+              <motion.div 
+                className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl border border-blue-400/30 p-6 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300 cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                    <TestTube className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Yeni Test Al</h3>
+                    <p className="text-blue-200 text-sm">Kişilik analizi güncelle</p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            <Link href="/chat">
+              <motion.div 
+                className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl border border-purple-400/30 p-6 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <MessageSquare className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">AI Danışman</h3>
+                    <p className="text-purple-200 text-sm">Kişisel rehberlik al</p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            <Link href="/career-roadmap">
+              <motion.div 
+                className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-2xl border border-green-400/30 p-6 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Kariyer Yolu</h3>
+                    <p className="text-green-200 text-sm">Detaylı yol haritası</p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            <Link href="/resources">
+              <motion.div 
+                className="bg-gradient-to-r from-orange-500/20 to-red-500/20 backdrop-blur-sm rounded-2xl border border-orange-400/30 p-6 hover:from-orange-500/30 hover:to-red-500/30 transition-all duration-300 cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Eğitim Önerileri</h3>
+                    <p className="text-orange-200 text-sm">Kişiselleştirilmiş kurslar</p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* OCEAN Scores Widget and Career Match */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* OCEAN Scores Widget */}
+            <div className="lg:col-span-2 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-white">OCEAN Kişilik Profili</h3>
+                <div className="text-sm text-gray-300">
+                  Son güncelleme: {userData?.lastTestDate ? new Date(userData.lastTestDate).toLocaleDateString('tr-TR') : 'Henüz test alınmadı'}
+                </div>
+              </div>
+              
+              {userData?.oceanScores ? (
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {Object.entries(userData.oceanScores).map(([trait, score]) => (
+                    <div key={trait} className="text-center">
+                      <div className="relative w-20 h-20 mx-auto mb-3">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#374151"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#8B5CF6"
+                            strokeWidth="2"
+                            strokeDasharray={`${((score as number) / 5) * 100}, 100`}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-white">{score as number}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm font-medium text-white">
+                        {trait === 'openness' ? 'Açıklık' :
+                         trait === 'conscientiousness' ? 'Sorumluluk' :
+                         trait === 'extraversion' ? 'Dışadönüklük' :
+                         trait === 'agreeableness' ? 'Uyumluluk' : 'Nörotizm'}
+                      </div>
+                      <div className="text-xs text-gray-400">/5</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-300 mb-4">Henüz OCEAN testi almadınız</p>
+                  <Link href="/test">
+                    <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-300">
+                      Test Al
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Career Match Percentage */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+              <h3 className="text-xl font-semibold text-white mb-6">Kariyer Uyumu</h3>
+              
+              <div className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-6">
+                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#374151"
+                      strokeWidth="3"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#10B981"
+                      strokeWidth="3"
+                      strokeDasharray={`${userData?.careerMatchPercentage || 0}, 100`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">
+                    {userData?.selectedField && userData?.oceanScores ? 
+                      calculateCareerMatch(userData.oceanScores, userData.selectedField) : 0}%
+                  </span>
+                </div>
+                </div>
+                
+                <div className="text-sm text-gray-300 mb-4">
+                  {userData?.selectedField ? (
+                    <span>Seçilen Alan: <span className="text-green-400 font-medium">{userData.selectedField}</span></span>
+                  ) : (
+                    <span>Henüz alan seçilmedi</span>
+                  )}
+                </div>
+                
+                <Link href="/career-roadmap">
+                  <button className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all duration-300">
+                    Kariyer Önerileri
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <div className={`w-16 h-16 bg-gradient-to-r ${getLevelColor(progressData.level)} rounded-2xl flex items-center justify-center mr-4`}>
+                  <Trophy className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Seviye {progressData.level}</h3>
+                  <p className="text-purple-200">{getLevelTitle(progressData.level)}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-white">{progressData.achievementPoints}</div>
+                <div className="text-purple-200">Toplam Puan</div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-purple-200 mb-2">
+                <span>Seviye İlerlemesi</span>
+                <span>{progressData.currentLevelPoints}/{progressData.nextLevelPoints}</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-3">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(progressData.currentLevelPoints / progressData.nextLevelPoints) * 100}%` }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className={`h-3 rounded-full bg-gradient-to-r ${getLevelColor(progressData.level)}`}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: TestTube, label: 'Test', value: progressData.testCompleted ? 'Tamamlandı' : 'Bekliyor', color: progressData.testCompleted ? 'text-green-400' : 'text-yellow-400' },
+                { icon: TargetIcon, label: 'Alan', value: progressData.fieldSelected ? 'Seçildi' : 'Bekliyor', color: progressData.fieldSelected ? 'text-green-400' : 'text-yellow-400' },
+                { icon: BookOpen, label: 'Eğitimler', value: `${progressData.coursesCompleted}/${progressData.totalCourses}`, color: 'text-blue-400' },
+                { icon: Activity, label: 'Chat', value: `${progressData.chatSessions}`, color: 'text-purple-400' }
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
+                  <div className="text-sm text-purple-200">{stat.label}</div>
+                  <div className={`font-semibold ${stat.color}`}>{stat.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          {!hasCompletedTest ? (
+            <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mr-4">
+                  <AlertCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-yellow-300 mb-2">
+                    Test Tamamlanmadı
+                  </h3>
+                  <p className="text-yellow-200 mb-4">
+                    AI chat özelliğini kullanabilmek için önce OCEAN kişilik testini tamamlamanız gerekiyor.
+                  </p>
+                  <a 
+                    href="/test" 
+                    className="inline-flex items-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    <TestTube className="w-5 h-5 mr-2" />
+                    Testi Çöz
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-green-300 mb-2">
+                    Test Tamamlandı ✓
+                  </h3>
+                  <p className="text-green-200 mb-4">
+                    OCEAN testiniz tamamlandı. Şimdi kariyer alanınızı seçebilir ve AI ile konuşabilirsiniz.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {hasCompletedTest && (
+          <>
+            {/* Test Sonuçları Bölümü */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mb-8"
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div className="flex items-center mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4">
+                    <TestTube className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white">OCEAN Test Sonuçları</h3>
+                </div>
+                
+                {userData?.oceanScores ? (
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    {[
+                      { key: 'openness', label: 'Açıklık', color: 'from-blue-500 to-cyan-500' },
+                      { key: 'conscientiousness', label: 'Sorumluluk', color: 'from-green-500 to-emerald-500' },
+                      { key: 'extraversion', label: 'Dışadönüklük', color: 'from-yellow-500 to-orange-500' },
+                      { key: 'agreeableness', label: 'Uyumluluk', color: 'from-purple-500 to-pink-500' },
+                      { key: 'neuroticism', label: 'Nevrotiklik', color: 'from-red-500 to-pink-500' }
+                    ].map((trait) => (
+                      <div key={trait.key} className="text-center">
+                        <div className={`w-16 h-16 bg-gradient-to-r ${trait.color} rounded-xl flex items-center justify-center mx-auto mb-3`}>
+                          <span className="text-white font-bold text-lg">
+                            {userData.oceanScores![trait.key as keyof typeof userData.oceanScores]}
+                          </span>
+                        </div>
+                        <div className="text-sm text-purple-200 mb-1">{trait.label}</div>
+                        <div className="w-full bg-white/20 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full bg-gradient-to-r ${trait.color}`}
+                            style={{ width: `${(userData.oceanScores![trait.key as keyof typeof userData.oceanScores] / 5) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {userData.lastTestDate && (
+                    <div className="mt-4 text-center">
+                      <p className="text-purple-300 text-sm">
+                        Test Tarihi: {new Date(userData.lastTestDate).toLocaleDateString('tr-TR')}
+                      </p>
+                    </div>
+                  )}
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gradient-to-r from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <AlertCircle className="w-8 h-8 text-white" />
+                    </div>
+                    <p className="text-gray-300 font-semibold mb-2">Test Sonuçları Bulunamadı</p>
+                    <p className="text-gray-400 text-sm">
+                      Test sonuçlarınız yüklenemedi. Lütfen sayfayı yenileyin.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Kariyer Alanı Seçimi Bölümü */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mb-8"
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div className="flex items-center mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mr-4">
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white">Kariyer Alanı Seçimi</h3>
+                </div>
+              
+              {selectedField ? (
+                <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl p-6 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3">
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-blue-200 font-semibold text-lg">Seçili Alan: {selectedField}</span>
+                    </div>
+                    <Link href="/career-roadmap">
+                      <button className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm">
+                        Kariyer Yoluna Başla
+                      </button>
+                    </Link>
+                  </div>
+                  <p className="text-blue-300 text-sm mt-2 ml-11">
+                    AI chat&apos;te bu alan hakkında konuşabilir veya kariyer yol haritasını görüntüleyebilirsiniz.
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-6">
+                  <p className="text-purple-200 mb-6 text-lg">
+                    Test sonuçlarınıza göre size önerilen alanlar:
+                  </p>
+                  
+                  {isLoadingData ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                      <p className="text-cyan-300">Kariyer önerileri yükleniyor...</p>
+                    </div>
+                  ) : availableFields.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {availableFields.map((recommendation, index) => (
+                        <motion.button
+                          key={recommendation.id}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleFieldSelection(recommendation.field)}
+                          className="p-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 text-left backdrop-blur-sm"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">
+                                <GraduationCap className="w-5 h-5 text-white" />
+                              </div>
+                              <span className="font-semibold text-white text-lg">{recommendation.field}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-green-400">{recommendation.confidence}%</div>
+                              <div className="text-xs text-purple-300">Uyum</div>
+                            </div>
+                          </div>
+                          <p className="text-purple-200 text-sm line-clamp-2">
+                            {recommendation.reasoning}
+                          </p>
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="w-full bg-white/20 rounded-full h-2 mr-3">
+                              <div 
+                                className="h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"
+                                style={{ width: `${recommendation.confidence}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-purple-300 whitespace-nowrap">
+                              {recommendation.confidence}%
+                            </span>
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-red-300 font-semibold mb-2">Kariyer Önerileri Yüklenemedi</p>
+                      <p className="text-red-200 text-sm mb-4">
+                        Test sonuçlarınıza göre kariyer önerileri oluşturulamadı. Lütfen testi tekrar çözün.
+                      </p>
+                      <button
+                        onClick={() => {
+                          loadCareerRecommendations();
+                          toast.success('Kariyer önerileri yeniden yükleniyor...');
+                        }}
+                        className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                      >
+                        Yeniden Dene
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Progress Tracker */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="lg:col-span-2"
+          >
+            <ProgressTracker userId={user?.id || ''} />
+          </motion.div>
+
+          {/* Son Aktiviteler */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="lg:col-span-1"
+          >
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-4">
+                  <Activity className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold text-white">Son Aktiviteler</h3>
+              </div>
+              
+              <div className="space-y-4">
+                {recentActivities.length > 0 ? (
+                  recentActivities.map((activity) => (
+                    <div key={activity.id} className="flex items-center p-4 bg-white/5 rounded-xl">
+                      <div className={`w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 ${activity.color}`}>
+                        {activity.icon}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-white font-semibold">{activity.title}</h4>
+                        <p className="text-purple-200 text-sm">{activity.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-purple-300 text-xs">
+                          {activity.timestamp.toLocaleTimeString('tr-TR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Clock className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                    <p className="text-purple-200">Henüz aktivite yok</p>
+                    <p className="text-purple-300 text-sm">Test çözerek ve AI ile konuşarak aktiviteler oluşturun</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Başarı Rozetleri */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mr-4">
+                  <Award className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold text-white">Başarı Rozetleri</h3>
+              </div>
+              
+              <div className="space-y-4">
+                {achievements.map((achievement) => (
+                  <div key={achievement.id} className={`p-4 rounded-xl border ${achievement.earned ? 'bg-white/10 border-green-500/30' : 'bg-white/5 border-white/10'}`}>
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${achievement.earned ? 'bg-green-500/20' : 'bg-white/10'}`}>
+                        <div className={achievement.color}>
+                          {achievement.icon}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className={`font-semibold ${achievement.earned ? 'text-white' : 'text-gray-400'}`}>
+                          {achievement.title}
+                        </h4>
+                        <p className={`text-sm ${achievement.earned ? 'text-green-200' : 'text-gray-500'}`}>
+                          {achievement.description}
+                        </p>
+                        {achievement.progress !== undefined && achievement.maxProgress !== undefined && (
+                          <div className="mt-2">
+                            <div className="flex justify-between text-xs text-purple-200 mb-1">
+                              <span>İlerleme</span>
+                              <span>{achievement.progress}/{achievement.maxProgress}</span>
+                            </div>
+                            <div className="w-full bg-white/20 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${achievement.earned ? 'bg-green-500' : 'bg-purple-500'}`}
+                                style={{ width: `${(achievement.progress / achievement.maxProgress) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {achievement.earned && (
+                        <CheckCircle2 className="w-5 h-5 text-green-400" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Kariyer Hedefleri */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mb-8"
+        >
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+            <div className="flex items-center mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mr-4">
+                <TargetIcon2 className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-2xl font-semibold text-white">Kariyer Hedefleri</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {careerGoals.map((goal) => (
+                <div key={goal.id} className="p-6 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-white font-semibold">{goal.title}</h4>
+                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(goal.status)} bg-white/10`}>
+                      {getStatusText(goal.status)}
+                    </span>
+                  </div>
+                  <p className="text-purple-200 text-sm mb-4">{goal.description}</p>
+                  
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs text-purple-200 mb-1">
+                      <span>İlerleme</span>
+                      <span>{goal.progress}%</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${goal.status === 'completed' ? 'bg-green-500' : goal.status === 'in_progress' ? 'bg-blue-500' : 'bg-gray-500'}`}
+                        style={{ width: `${goal.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center text-xs text-purple-300">
+                    <Calendar className="w-3 h-3 mr-1" />
+                    <span>Hedef: {goal.targetDate.toLocaleDateString('tr-TR')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          {[
+            { 
+              icon: Brain, 
+              title: 'Test Durumu', 
+              value: hasCompletedTest ? 'Tamamlandı' : 'Bekliyor', 
+              color: hasCompletedTest ? 'from-green-500 to-emerald-500' : 'from-yellow-500 to-orange-500',
+              bgColor: hasCompletedTest ? 'from-green-500/20 to-emerald-500/20' : 'from-yellow-500/20 to-orange-500/20'
+            },
+            { 
+              icon: Target, 
+              title: 'Alan Seçimi', 
+              value: selectedField ? 'Seçildi' : 'Bekliyor', 
+              color: selectedField ? 'from-blue-500 to-cyan-500' : 'from-yellow-500 to-orange-500',
+              bgColor: selectedField ? 'from-blue-500/20 to-cyan-500/20' : 'from-yellow-500/20 to-orange-500/20'
+            },
+            { 
+              icon: BookOpen, 
+              title: 'Eğitimler', 
+              value: `${progressData.coursesCompleted}/${progressData.totalCourses}`, 
+              color: 'from-purple-500 to-pink-500',
+              bgColor: 'from-purple-500/20 to-pink-500/20'
+            },
+            { 
+              icon: Award, 
+              title: 'Başarı Puanı', 
+              value: `${progressData.achievementPoints} Puan`, 
+              color: 'from-indigo-500 to-purple-500',
+              bgColor: 'from-indigo-500/20 to-purple-500/20'
+            }
+          ].map((stat, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 + index * 0.1 }}
+              className={`bg-gradient-to-r ${stat.bgColor} backdrop-blur-sm border border-white/20 rounded-2xl p-6`}
+            >
+              <div className="flex items-center">
+                <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center mr-4`}>
+                  <stat.icon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-purple-200 text-sm font-medium">{stat.title}</p>
+                  <p className="text-white text-xl font-bold">{stat.value}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {[
+            { 
+              icon: BookOpen, 
+              title: 'Test Çöz', 
+              description: 'OCEAN kişilik testini çözün',
+              href: '/test',
+              color: 'from-blue-500 to-cyan-500',
+              disabled: false
+            },
+            { 
+              icon: Target, 
+              title: 'AI Chat', 
+              description: 'Kariyer danışmanı ile konuşun',
+              href: '/chat',
+              color: 'from-purple-500 to-pink-500',
+              disabled: !hasCompletedTest || !selectedField
+            },
+            { 
+              icon: TrendingUp, 
+              title: 'Eğitimler', 
+              description: 'Önerilen eğitimleri görün',
+              href: '/resources',
+              color: 'from-green-500 to-emerald-500',
+              disabled: !hasCompletedTest || !selectedField
+            }
+          ].map((action, index) => (
+            <Link href={action.href} key={index}>
+              <motion.div
+                whileHover={{ scale: action.disabled ? 1 : 1.02 }}
+                whileTap={{ scale: action.disabled ? 1 : 0.98 }}
+                className={`bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 cursor-pointer transition-all duration-300 ${
+                  action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/20 hover:shadow-xl'
+                }`}
+              >
+              <div className={`w-16 h-16 bg-gradient-to-r ${action.color} rounded-2xl flex items-center justify-center mb-6`}>
+                <action.icon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">{action.title}</h3>
+              <p className="text-purple-200 text-sm mb-4">{action.description}</p>
+              {action.disabled ? (
+                <div className="text-red-400 text-sm bg-red-500/20 p-3 rounded-lg">
+                  {!hasCompletedTest ? 'Önce test çözün' : 'Önce alan seçin'}
+                </div>
+              ) : (
+                <div className="flex items-center text-white font-medium">
+                  Başla
+                  <div className="w-4 h-4 ml-2">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+              </motion.div>
+            </Link>
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+}
