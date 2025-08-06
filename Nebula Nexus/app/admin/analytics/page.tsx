@@ -24,10 +24,10 @@ import {
   Calendar,
   Filter
 } from 'lucide-react';
-import { useAuth } from '@/app/contexts/AuthContext';
-import { useNotificationManager } from '@/components/ui/NotificationSystem';
-import LoadingIndicators, { Spinner } from '@/components/ui/LoadingIndicators';
-import LazyLoad from '@/components/ui/LazyLoad';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotificationManager } from '../../../components/ui/NotificationSystem';
+import LoadingIndicators, { Spinner } from '../../../components/ui/LoadingIndicators';
+import LazyLoad from '../../../components/ui/LazyLoad';
 
 interface AnalyticsData {
   // Overview data
