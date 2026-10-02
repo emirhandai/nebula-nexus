@@ -1,0 +1,753 @@
+moduller:
+- dosya: Nebula Nexus/api/admin/create-admin/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - app/api/auth/[...nextauth]/route
+- dosya: Nebula Nexus/app/about/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/components/layout/Footer
+  - Nebula Nexus/components/layout/Header
+- dosya: Nebula Nexus/app/admin/ai/page.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/admin/analytics/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+  - Nebula Nexus/components/ui/LazyLoad
+  - Nebula Nexus/components/ui/LoadingIndicators
+  - Nebula Nexus/components/ui/NotificationSystem
+- dosya: Nebula Nexus/app/admin/careers/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/admin/communication/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/admin/forum/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/admin/layout.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+- dosya: Nebula Nexus/app/admin/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+- dosya: Nebula Nexus/app/admin/performance/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/admin/security/page.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/admin/settings/page.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/admin/users/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/api/admin/activity-log/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/ai/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/analytics/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/careers/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/communication/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/field-stats/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/forum/comments/approve/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/forum/comments/delete/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/forum/comments/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/forum/delete/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/forum/posts/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/realtime/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/recent-activity/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/lib/prisma
+- dosya: Nebula Nexus/app/api/admin/security/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/admin/stats/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/lib/prisma
+  - Nebula Nexus/lib/security
+- dosya: Nebula Nexus/app/api/admin/system-metrics/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/lib/prisma
+  - Nebula Nexus/lib/security
+- dosya: Nebula Nexus/app/api/admin/test/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/admin/users/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/lib/prisma
+  - Nebula Nexus/lib/security
+- dosya: Nebula Nexus/app/api/auth/[...nextauth]/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/auth/login/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/auth/session/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/api/auth/[...nextauth]/route
+- dosya: Nebula Nexus/app/api/auth/signup/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/validation
+- dosya: Nebula Nexus/app/api/career-roadmap/clear/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/career-roadmap/course-toggle/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/career-roadmap/courses/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/career-roadmap/generate/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/career-roadmap/level-based/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/api/auth/[...nextauth]/route
+  - lib/gemini
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/career-roadmap/milestone-toggle/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/career-roadmap/milestones/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/career-roadmap/progress/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/lib/prisma
+- dosya: Nebula Nexus/app/api/career-roadmap/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/career-roadmap/user-roadmaps/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/api/auth/[...nextauth]/route
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/analytics/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/context/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/create-session/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/delete-session/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/enhanced/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/gemini
+  - lib/prisma
+  - lib/validation
+- dosya: Nebula Nexus/app/api/chat/generate/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/chat/github/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/chat/quiz/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/gemini
+- dosya: Nebula Nexus/app/api/chat/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/gemini
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/security/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/chat/send-message/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/courses/fetch-btk/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/courses/recommendations/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - data/courses-data
+- dosya: Nebula Nexus/app/api/courses/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/debug/user-data/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/categories/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/comments/[id]/delete/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/comments/[id]/like/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/comments/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/posts/[id]/approve/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/forum/posts/[id]/comments/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/posts/[id]/delete/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/posts/[id]/like/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/posts/[id]/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+  - lib/security
+- dosya: Nebula Nexus/app/api/forum/posts/[id]/view/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/posts/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/forum/stats/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/health/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/gemini
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/messages/[id]/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/messages/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/notifications/push/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/notifications/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/ocean/analyze/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - data/onet-data
+  - data/onet-questions
+- dosya: Nebula Nexus/app/api/ocean/save-result/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - data/ocean-questions
+  - data/onet-questions
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/projects/[id]/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/projects/jobs/apply/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/projects/jobs/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/projects/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/search/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/security/test/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/user/achievements/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/activity-log/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/career-goals/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/career-recommendations/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/user/certificates/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/chat-history/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/user/dashboard/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/privacy/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/profile-stats/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/api/auth/[...nextauth]/route
+- dosya: Nebula Nexus/app/api/user/profile/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/progress/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/recent-activities/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/app/api/user/test-history/route.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/api/user/test-recommendations/route.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/gemini
+  - lib/prisma
+- dosya: Nebula Nexus/app/auth/admin/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+- dosya: Nebula Nexus/app/auth/signin/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/auth/signup/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/blog/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/career-roadmap/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+  - components/ui/LoadingIndicators
+  - components/ui/NotificationSystem
+- dosya: Nebula Nexus/app/chat/enhanced/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+  - components/ui/LazyLoad
+  - components/ui/LoadingIndicators
+  - components/ui/NotificationSystem
+- dosya: Nebula Nexus/app/chat/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+  - components/chat/GeneratedContentDisplay
+  - components/ui/NotificationSystem
+- dosya: Nebula Nexus/app/community/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/contact/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/contexts/AuthContext.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/cookies/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/dashboard/career-recommendations/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/dashboard/chat-history/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/dashboard/notifications/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+  - components/ui/ErrorBoundary
+  - components/ui/LoadingSpinner
+  - components/ui/NotificationSystem
+- dosya: Nebula Nexus/app/dashboard/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+- dosya: Nebula Nexus/app/dashboard/profile/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+  - components/ui/ErrorBoundary
+  - components/ui/LoadingSpinner
+  - components/ui/Toast
+- dosya: Nebula Nexus/app/dashboard/test-history/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/dashboard/test-recommendations/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/app/faq/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/feedback/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/forum/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/forum/post/[id]/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - contexts/AuthContext
+- dosya: Nebula Nexus/app/help/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/kvkk/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/layout.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/providers
+- dosya: Nebula Nexus/app/messages/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - contexts/AuthContext
+- dosya: Nebula Nexus/app/offline/page.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/effects/BackgroundEffects
+  - components/layout/Footer
+  - components/layout/Header
+  - hooks/useScrollObserver
+- dosya: Nebula Nexus/app/privacy/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/projects/[id]/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - contexts/AuthContext
+- dosya: Nebula Nexus/app/projects/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Header
+  - contexts/AuthContext
+- dosya: Nebula Nexus/app/providers.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+- dosya: Nebula Nexus/app/pwa/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/ui/PWAInstaller
+- dosya: Nebula Nexus/app/resources/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/app/contexts/AuthContext
+- dosya: Nebula Nexus/app/results/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/OceanRadarChart
+  - data/onet-data
+  - types
+- dosya: Nebula Nexus/app/robots.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/sitemap.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/app/status/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/terms/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+- dosya: Nebula Nexus/app/test/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/ui/NotificationSystem
+  - contexts/AuthContext
+  - data/ocean-questions
+  - data/onet-questions
+- dosya: Nebula Nexus/app/test/results/page.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/layout/Footer
+  - components/layout/Header
+  - lib/ocean-calculator
+- dosya: Nebula Nexus/components/OceanRadarChart.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/chat/GeneratedContentDisplay.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/effects/BackgroundEffects.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/layout/Footer.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/layout/Header.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+  - components/ui/GlobalSearch
+- dosya: Nebula Nexus/components/ui/AdvancedFilters.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/Button.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - utils/cn
+- dosya: Nebula Nexus/components/ui/CodeBlock.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/ErrorBoundary.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/GlobalSearch.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/components/ui/LazyLoad.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - components/ui/LoadingIndicators
+- dosya: Nebula Nexus/components/ui/LoadingIndicators.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/LoadingSpinner.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/MobileNavigation.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/components/ui/MobileOptimizedLayout.tsx
+  sorumluluk: ''
+  bagimliliklar:
+  - app/contexts/AuthContext
+- dosya: Nebula Nexus/components/ui/NotificationSystem.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/PWAInstaller.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/PersonalityReport.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/ProgressTracker.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/components/ui/Toast.tsx
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/data/btk-courses.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/data/career-roadmaps.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/data/courses-data.ts
+  sorumluluk: Eğitim Platformu Veritabanı
+  bagimliliklar: []
+- dosya: Nebula Nexus/data/ocean-questions.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/ocean-calculator
+- dosya: Nebula Nexus/data/onet-data.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/data/onet-questions.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/hooks/useCache.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/hooks/useLoading.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/hooks/useQuery.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - Nebula Nexus/hooks/useCache
+- dosya: Nebula Nexus/hooks/useScrollObserver.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/lib/csrf.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/lib/gemini.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/lib/ocean-calculator.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/lib/prisma.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/lib/security.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - lib/prisma
+- dosya: Nebula Nexus/lib/validation.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/middleware.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/next-env.d.ts
+  sorumluluk: / <reference types="next" />
+  bagimliliklar: []
+- dosya: Nebula Nexus/prisma/seed.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/types/index.ts
+  sorumluluk: User Types
+  bagimliliklar: []
+- dosya: Nebula Nexus/types/next-auth.d.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/utils/cn.ts
+  sorumluluk: ''
+  bagimliliklar: []
+- dosya: Nebula Nexus/utils/ocean-calculator.ts
+  sorumluluk: ''
+  bagimliliklar:
+  - types

@@ -1,0 +1,61 @@
+# .context/index.yaml — kurulum ajanı çıktısı (kurulum ajanı tarafından ÜRETİLDİ; dil=typescript, profil=node.)
+surum: 1
+kapsam_ozeti: >-
+  kurulum ajanı tarafından ÜRETİLDİ; dil=typescript, profil=node.
+
+dilimler:
+  - dosya: 00-proje-ozeti.md
+    token: 95
+    her_gorevde: true
+    cevaplar:
+      - "Bu depo hangi dilde ve hangi paket yöneticisiyle çalışıyor?"
+      - "Doğrulama zinciri hangi komutlardan oluşuyor?"
+  - dosya: 01-dizin-haritasi.md
+    token: 692
+    cevaplar:
+      - "Hangi dosya nerede duruyor, dizin yapısı nasıl?"
+      - "Kaynak kod hangi dizinlerde, hangisi ne kadar büyük?"
+  - dosya: 02-komutlar.md
+    token: 88
+    cevaplar:
+      - "Bu depo nasıl kurulur, koşturulur, test edilir, derlenir?"
+      - "Lint / tip denetimi / build komutu nedir?"
+  - dosya: 03-bagimliliklar.md
+    token: 96
+    cevaplar:
+      - "Hangi çerçeve ve kütüphaneler kullanılıyor, hangi sürümlerde?"
+      - "Yeni bir paket eklemeden önce zaten var mı?"
+  - dosya: 05-moduller.yaml
+    token: 5946
+    cevaplar:
+      - "Hangi modüller var ve birbirine nasıl bağlı?"
+    uretilir_kaynaklar:
+      - "(disk taraması + git ls-files)"
+    uretim_secenekleri:
+      kesit:
+        liste: moduller
+        alan: [dosya, bagimliliklar]
+        azami: 30
+  - dosya: 06-son-degisiklikler.md
+    token: 90
+    cevaplar:
+      - "Depo en son ne yönde ilerledi, son commit'ler ne yaptı?"
+  - dosya: 07-tuzaklar.md
+    token: 103
+    cevaplar:
+      - "Bu depoda hangi kurallara uyulmazsa doğrulama düşer?"
+      - "Tip katılığı, yol takma adları, test dosyası deseni nedir?"
+
+gorev_tipi_esleme:
+  varsayilan: [00-proje-ozeti, 01-dizin-haritasi, 02-komutlar, 03-bagimliliklar, 05-moduller, 06-son-degisiklikler, 07-tuzaklar]
+  istek-anlama: [01-dizin-haritasi]
+  plan: [01-dizin-haritasi, 05-moduller, 07-tuzaklar]
+  tek-atis: [01-dizin-haritasi, 02-komutlar, 03-bagimliliklar, 05-moduller, 07-tuzaklar]
+  gorunum-degistir: [01-dizin-haritasi, 05-moduller, 07-tuzaklar]
+  test-yazma: [01-dizin-haritasi, 02-komutlar, 05-moduller, 07-tuzaklar]
+  refactor-mekanik: [01-dizin-haritasi, 05-moduller, 07-tuzaklar]
+  hata-ayiklama: [01-dizin-haritasi, 02-komutlar, 05-moduller, 06-son-degisiklikler, 07-tuzaklar]
+  mimari-karar: [01-dizin-haritasi, 03-bagimliliklar, 05-moduller, 06-son-degisiklikler]
+  sohbet: [01-dizin-haritasi]
+  baglam-uretim: []
+  baglam-tazeleme: []
