@@ -1,0 +1,10 @@
+# Özellik haritası — bu dosya İSKELET olarak açılır ve ayrı bir
+# adım (bağlam derin taraması) tarafından doldurulur; kurulum
+# jeneratörü haritayı FABRİKE ETMEZ.
+# Kayıtlar dosya ADLARINDAN UYDURULMAZ: her kayıt deponun gerçek
+# yapısından okunur ve onu kanıtlayan dosyaları 'dosyalar:'
+# alanında gösterir. Gösteremediğin kaydı YAZMA.
+# Kapsama kuralı DİZİN ÖNEKİdir; bkz. depo kökündeki örnek.
+surum: 1
+
+ozellikler: []
